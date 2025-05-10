@@ -89,7 +89,7 @@ int main(int argc, char **argv) {
     struct user_regs_struct regs;
     struct syscall_stats stats;
     struct command cmd;
-    
+
     FILE *writefile = stdout;
 
     if (argc < 2)
@@ -116,7 +116,7 @@ int main(int argc, char **argv) {
             return 1;
         }
     }
-    
+
     if ((child = fork()) == 0) {
         ptrace(PTRACE_TRACEME, 0);
         raise(SIGSTOP);
@@ -127,13 +127,13 @@ int main(int argc, char **argv) {
             exec_args[i] = argv[cmd.command_index + i];
         }
         exec_args[cmd_argc] = NULL;
-        
+
         execvp(exec_args[0], exec_args);
 
         fprintf(stderr, "execvp");
         return 1;
     } // the usual ptrace forking procedure
-    
+
     fprintf(writefile, "\n==========START==========\n\n");
     while (1)
     {
@@ -146,7 +146,7 @@ int main(int argc, char **argv) {
 
         ptrace(PTRACE_GETREGS, child, NULL, &regs); // get the registers to get the syscall
         syscall = regs.orig_rax; // rax which is the syscall number
-        
+
         if (first)
         {
             first = 0;
@@ -156,7 +156,7 @@ int main(int argc, char **argv) {
 
         duration = timestamp() - now;
         fprintf(writefile, "%4d | %.9f | %3d : %15s | Duration : %.9f\n",count, timestamp() - start, syscall, syscalls[syscall], duration); // prints the syscall name
-        
+
         if (duration >= stats.max_time)
         {
             stats.longest_call_number = syscall;
@@ -167,7 +167,7 @@ int main(int argc, char **argv) {
         count += 1;
         now = timestamp();
     }
-    
+
     fprintf(writefile, "\n\n========== SUMMARY ==========\n");
     fprintf(writefile, "Calls : %d\n", count);
     fprintf(writefile, "Logest syscall : %d | %s\n", stats.longest_call, syscalls[stats.longest_call_number]);
